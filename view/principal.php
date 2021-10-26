@@ -45,57 +45,48 @@ Bem Vindo <?php echo $_SESSION['nome'] ?>
     <table id="table_id" class="display striped">
                 <thead>
                     <tr>
+                        <th>U</th>
                         <th>TA</th>
                         <th>BD</th>
-                        <th>Tier</th>
+                        <th>Cliente</th>
                         <th>Status</th>
                         <th>Técnico</th>
-                        <th>Prev. Prox. Atualização</th>
-                        <th>Data/Hora Abertura</th>
+                        <th>Ultima Atualização</th>
+                        <th>Age</th>
                         <th>Ação</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td class="yellow">123456<span class="material-icons red-text">priority_high</span></td>
-                        <td>4040400</td>
-                        <td>0</td>
-                        <td>Recuperação</td>
-                        <td>Wilson</td>
-                        <td>25/10/21 19:00</td>
-                        <td>25/10/21 10:00</td>
-                        <td><input data-target="modal1" class="btn orange modal-trigger" type="button" value="Interagir"></td>
-                    </tr>
-                    <tr>
-                        <td>654321</td>
-                        <td>4012345</td>
-                        <td>1</td>
-                        <td>Deslocamento</td>
-                        <td>Nilton</td>
-                        <td>25/10/21 19:30</td>
-                        <td>25/10/21 11:00</td>
-                        <td><input data-target="modal1" class="btn orange modal-trigger" type="button" value="Interagir"></td>
-                    </tr>
-                    <tr>
-                        <td>999999</td>
-                        <td>4040777</td>
-                        <td>1</td>
-                        <td>Deslocamento</td>
-                        <td>Nilton 2</td>
-                        <td>25/10/21 21:00</td>
-                        <td>25/10/21 07:00</td>
-                        <td><input data-target="modal1" class="btn orange modal-trigger" type="button" value="Interagir"></td>
-                    </tr>
-                    <tr>
-                        <td class="purple">888888</td>
-                        <td>40488888</td>
-                        <td>1</td>
-                        <td>Pendente Disponibilidade técnica</td>
-                        <td> -- </td>
-                        <td>25/10/21 23:00</td>
-                        <td>25/10/21 14:00</td>
-                        <td><input data-target="modal1" class="btn orange modal-trigger" type="button" value="Interagir"></td>
-                    </tr>
+
+                    <?php
+                        foreach (get_data() as $key => $value) {
+                            $prioritario = "";
+                            if(prioridades($value['bd']) == "sim"){
+                                $prioritario = "<span class='material-icons'>priority_high</span>";
+                            }
+                            
+
+                            $color = "";
+                            if($value['Faixa'] == "Acima de 5d"){
+                                $color = "class='red lighten-3'";
+                                $prioritario = "<span class='material-icons'>priority_high</span>";
+                            }
+                            echo "<tr $color>";
+                            echo "<td>$prioritario</td>";
+                            echo "<td>".(isset($value['TARaiz']) ? $value['TARaiz'] : $value['Sequencia'])."</td>";
+                            echo "<td>".(isset($value['bd'])? $value['bd'] : $value['TíqueteReferência'])."</td>";
+                            echo "<td>".(strlen($value['cliente_nome']) > 40 ? substr($value['cliente_nome'], 0, 40) . "..." : $value['cliente_nome']).(isset($value['nome_cliente'])? "" : nome_cliente($value['Alarme']))."</td>";
+                            echo "<td>".$value["Status"]."</td>";
+                            echo "<td>".(parse_obs($value["ObservaçãoHistórico"]))."</td>";
+                            echo "<td></td>";
+                            echo "<td>".$value['Faixa']."</td>";
+                            echo "<td><input data-target='modal1' class='btn orange modal-trigger' type='button' value='Interagir'></td>";
+                            echo "</tr>";
+                        }
+                        
+                    
+                    ?>
+
 
                 </tbody>
             </table>
@@ -181,3 +172,50 @@ Bem Vindo <?php echo $_SESSION['nome'] ?>
   scrollbar-width: none;  /* Firefox */
 } 
 </style>
+
+<?php
+
+function get_data(){
+    include "main/pdo.php";
+    $cmd = $pdo->query("SELECT  * FROM  base_eventos_b2b A LEFT JOIN base_eventos_ta B ON A.TARaiz = B.Sequencia UNION ALL SELECT  * FROM base_eventos_b2b A RIGHT JOIN base_eventos_ta B ON A.TARaiz = B.Sequencia WHERE   A.TARaiz IS NULL");
+    $data = $cmd->fetchAll(PDO::FETCH_ASSOC);
+    return $data;
+}
+
+function parse_obs($obs){
+    $obs = explode("CFO", $obs);
+    if (count($obs) > 1) {
+        $obs_res = $obs[1];
+    }else{
+        $obs_res = "Não informado";
+    }
+    return $obs_res;
+}
+
+function nome_cliente($obs){
+    $obs = explode("CLIENTE", $obs);
+    if (count($obs) > 1) {
+        $obs_res = substr($obs[1], 0 , 15);
+    }else{
+        $obs_res = "";
+    }
+    return $obs_res;
+}
+
+function prioridades($bd){
+    include "main/pdo.php";
+    $cmd = $pdo->query("SELECT  * FROM  prioridades WHERE bd = '$bd'");
+    $data = $cmd->fetchAll(PDO::FETCH_ASSOC);
+    if(count($data) > 0){
+        return "sim";
+    }else{
+        return "não";
+    }
+}
+
+ // SELECT  * FROM  base_eventos_b2b A LEFT JOIN base_eventos_ta B ON A.TARaiz = B.Sequencia UNION ALL SELECT  * FROM base_eventos_b2b A RIGHT JOIN base_eventos_ta B ON A.TARaiz = B.Sequencia WHERE   A.TARaiz IS NULL
+
+?>
+
+
+
