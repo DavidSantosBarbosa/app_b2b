@@ -15,6 +15,7 @@ if($validar->rowCount() > 0) {
     $_SESSION['id'] = $_POST['id'];
     $_SESSION['nome'] = $resultado['nome'];
     $_SESSION['page'] = "view/principal";
+    $_SESSION['logado'] = "sim";
     header("Location: ../app.php");
 } else {
     header("Location: ../app.php?erro=r001");

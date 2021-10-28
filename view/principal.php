@@ -1,4 +1,5 @@
 <script src="main/charts/charts.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/linways/table-to-excel@v1.0.4/dist/tableToExcel.js"></script>
 <script>
     function dash(total, prioritario, prioritario_sla) {
         document.getElementById('total').innerHTML = total;
@@ -13,35 +14,7 @@ Bem Vindo <?php echo $_SESSION['nome'] ?>
 <div class="row">
     <div class="col s12">
         <script type="text/javascript">
-            google.charts.load('current', {
-                'packages': ['corechart']
-            });
-            google.charts.setOnLoadCallback(drawChart);
 
-            function drawChart() {
-                var data = google.visualization.arrayToDataTable([
-                    ['Dia', 'Em Tratativa', 'Paralizado'],
-                    ['23', 12, 4],
-                    ['24', 9, 1],
-                    ['25', 23, 8]
-                ]);
-
-                var options = {
-                    title: 'Resumo',
-                    hAxis: {
-                        title: 'Dias',
-                        titleTextStyle: {
-                            color: '#333'
-                        }
-                    },
-                    vAxis: {
-                        minValue: 0
-                    }
-                };
-
-                var chart = new google.visualization.AreaChart(document.getElementById('chart_div'));
-                chart.draw(data, options);
-            }
         </script>
 
     </div>
@@ -49,18 +22,33 @@ Bem Vindo <?php echo $_SESSION['nome'] ?>
 
 <div class="row">
     <div class="col s12 m6">
-        <div id="">
-
+        <div class="col s6 m4">
+            <div class="card-panel" style="margin: 1px;">
+            <h6>Total</h6>
+            <h6 id='total'></h6>
+            </div>
+        </div>
+        <div class="col s6 m4">
+            <div class="card-panel" style="margin: 1px;">
+            <h6>Prioritário</h6>
+            <h6 id='prioritario'></h6>
+            </div>
+        </div>
+        <div class="col s6 m4">
+            <div class="card-panel" style="margin: 1px;">
+            <h6>Prioritário por SLA</h6>
+            <h6 id='prioritario_sla'></h6>
+            </div>
         </div>
     </div>
-    <div class="col s12 m6">
+    <!--div class="col s12 m6">
         <div class='card-panel'>
             <table>
                 <tr>
                     <th>
                         Total:
                     </th>
-                    <td id='total' class=''>
+                    <td class=''>
 
                     </td>
                 </tr>
@@ -68,7 +56,7 @@ Bem Vindo <?php echo $_SESSION['nome'] ?>
                     <th>
                         Prioritário:
                     </th>
-                    <td id='prioritario' class=''>
+                    <td  class=''>
 
                     </td>
                 </tr>
@@ -76,13 +64,13 @@ Bem Vindo <?php echo $_SESSION['nome'] ?>
                     <th>
                         Prioritário por SLA:
                     </th>
-                    <td id='prioritario_sla' class=''>
+                    <td class=''>
 
                     </td>
                 </tr>
             </table>
         </div>
-    </div>
+    </div-->
 
 </div>
 
@@ -183,10 +171,49 @@ Bem Vindo <?php echo $_SESSION['nome'] ?>
         <a href="#!" class="modal-close waves-effect waves-green btn-flat">Fechar</a>
     </div>
 </div>
+<table id="table_id2" hidden>
+<?php
+foreach (get_data() as $key => $value) {
+
+    $prioritario = "";
+    if (prioridades($value['bd']) == "sim") {
+
+    }
+    $color = "";
+    if ($value['Faixa'] == "Acima de 5d") {
+
+    }
+    echo "<tr $color>";
+    echo "<td>$prioritario</td>";
+    echo "<td>" . (isset($value['TARaiz']) ? $value['TARaiz'] : $value['Sequencia']) . "</td>";
+    echo "<td>" . (isset($value['bd']) ? $value['bd'] : $value['TíqueteReferência']) . "</td>";
+    echo "<td>" . (strlen($value['cliente_nome']) > 40 ? substr($value['cliente_nome'], 0, 40) . "..." : $value['cliente_nome']) . (isset($value['nome_cliente']) ? "" : nome_cliente($value['Alarme'])) . "</td>";
+    echo "<td>" . (pegar_status($value["ObservaçãoHistórico"])) . "</td>";
+    echo "<td>" . (pegar_tecnico($value["ObservaçãoHistórico"])) . "</td>";
+    echo "<td></td>";
+    echo "<td>" . $value['Faixa'] . "</td>";
+    echo "<td><input data-target='modal1' class='btn orange modal-trigger' type='button' value='Interagir' onclick='priorizar(" . (isset($value['bd']) ? $value['bd'] : $value['TíqueteReferência']) . ", " . (isset($value['TARaiz']) ? $value['TARaiz'] : $value['Sequencia']) . ", \"" . $value['cliente_nome'] . "\")'></td>";
+    echo "</tr>";
+    
+}
+?>
+</table>
+<input class="btn" type="button" id="exportBtn1" value="Exportar Registros"/>
+
 
 
 <!--div id="chart_div" style="width: 100%; height: 200px;"></div-->
 <script>
+    $(document).ready(function() {
+            $("#exportBtn1").click(function() {
+                TableToExcel.convert(document.getElementById("table_id2"), {
+                    name: "base_dados.xlsx",
+                    sheet: {
+                        name: "Sheet1"
+                    }
+                });
+            });
+        });
     // MODAL
     document.addEventListener('DOMContentLoaded', function() {
         var elems = document.querySelectorAll('.modal');
