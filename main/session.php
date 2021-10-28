@@ -4,7 +4,7 @@ require "pdo.php";
 
 // Autenticar usuário
 
-$validar = $pdo->prepare("SELECT * FROM usuarios WHERE id = :id AND senha = :senha");
+$validar = $pdo->prepare("SELECT * FROM appb2b_usuarios WHERE id = :id AND senha = :senha");
 $validar->bindValue(":id", $_POST['user']);
 $validar->bindValue(":senha", $_POST['pass']);
 $validar->execute();

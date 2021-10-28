@@ -22,6 +22,11 @@
     <input name="sair" type="button" value="Sair" onclick="submit()">
     </form>
 
+    <form action="func/navigate.php" method="post">
+    <input type="text" name="pagina" id="pagina" value='view/importar_base_b2b' hidden>
+    <input name="sair" type="button" value="ADM" onclick="submit()">
+    </form>
+
 </body>
 
 </html>
